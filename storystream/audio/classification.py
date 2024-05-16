@@ -32,6 +32,7 @@ class AudioClassifier:
         mel = np.mean(librosa.feature.melspectrogram(y=data, sr=sample_rate, hop_length=20).T, axis=0)
         result = np.hstack((result, mel))
         
+        print(result.shape)
         return result
     
     def feature_extractor(self, path):
@@ -42,6 +43,11 @@ class AudioClassifier:
 
     def classify(self, audio_file_path):
         feature = self.feature_extractor(audio_file_path)
-        feature = torch.tensor(feature, dtype=torch.float32).to(self.device)
-        _, predicted_idx = torch.max(self.model(feature), 1)
+        feature = np.array(feature).reshape((1,feature.shape[0]))
+        feature = torch.tensor(feature[:, 1:], dtype=torch.float32).to(self.device)
+        __, predicted_idx = torch.max(self.model(feature), 1)
         return self.emotions[predicted_idx]
+
+# device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+# classifier = AudioClassifier(model_path="./m2e_classifier_9360.pth", device=device)
+# print(classifier.classify(audio_file_path='./data/aggresive_1.wav'))
