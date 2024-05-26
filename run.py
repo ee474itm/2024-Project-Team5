@@ -7,7 +7,6 @@ story_generator = StoryGenerator(summarizer=True)
 story = story_generator.generate_story(
     audio_file_path="path/to/audio/file",
     image_file_path="path/to/image/file",
-    motion_file_path="path/to/motion/file",
 )
 
 # Print the generated story
