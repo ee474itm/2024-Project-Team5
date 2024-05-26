@@ -78,7 +78,10 @@ class ImageContextExtractor:
         """
         prompt = "[INST] <image>\nWhat is shown in this image? [/INST]"
         inputs = self.processor(prompt, image, return_tensors="pt")
-        output = self.model.generate(**inputs, max_new_tokens=max_new_tokens, **kwargs)
-        context = self.processor.decode(output[0], skip_special_tokens=True)
+        generated_ids = self.model.generate(
+            **inputs, max_new_tokens=max_new_tokens, **kwargs
+        )
+        generated_ids = generated_ids[:, inputs["input_ids"].shape[1] :]
+        context = self.processor.decode(generated_ids[0], skip_special_tokens=True)
 
         return context
