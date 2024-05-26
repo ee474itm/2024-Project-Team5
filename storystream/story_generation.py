@@ -3,15 +3,31 @@ from storystream.llm.conversation import LLMConversation
 
 
 class StoryGenerator:
-    def __init__(self, summarizer: bool = False):
-        self.context_extractor = ContextExtractor()
-        self.llm_conversation = LLMConversation(summarizer=summarizer)
+    def __init__(self, audio_params=None, image_params=None, llm_params=None):
+        """
+        Initialize the StoryGenerator class.
 
-    def generate_story(self, audio_file_path=None, image_file_path=None):
+        :param audio_params: Dictionary of parameters to pass to AudioContextExtractor.
+        :param image_params: Dictionary of parameters to pass to ImageContextExtractor.
+        :param llm_params: Dictionary of parameters to pass to LLMConversation.
+        """
+        self.context_extractor = ContextExtractor(
+            audio_params=audio_params, image_params=image_params
+        )
+        self.llm_conversation = LLMConversation(**(llm_params or {}))
+
+    def generate_story(self, audio_file_path=None, image_file_path=None, **kwargs):
+        """
+        Generate a story from the provided multimedia files.
+
+        :param audio_file_path: The path to the audio file.
+        :param image_file_path: The path to the image file.
+        :param kwargs: Additional parameters for context extraction.
+        :return: The generated story as a string.
+        """
         # Extract context from the provided multimedia files
         context = self.context_extractor.extract_all_contexts(
-            audio_file_path=audio_file_path,
-            image_file_path=image_file_path,
+            audio_file_path=audio_file_path, image_file_path=image_file_path, **kwargs
         )
 
         # Generate story using the LLM with the extracted context

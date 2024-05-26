@@ -17,6 +17,7 @@ class LLMConversation:
         summarizer: bool = False,
         device: torch.device = None,
         quantization_config: BitsAndBytesConfig = BitsAndBytesConfig(load_in_8bit=True),
+        **kwargs,
     ):
         """
         Initialize the LLMConversation class.
@@ -25,12 +26,15 @@ class LLMConversation:
         :param summarizer: Boolean flag to determine if summarizer should be used.
         :param device: The device to load the model on.
         :param quantization_config: Configuration for quantization.
+        :param kwargs: Additional parameters for model loading.
         """
         if device is None:
             device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
         model = AutoModelForCausalLM.from_pretrained(
-            model_id, device_map=device, quantization_config=quantization_config
+            model_id,
+            device_map=device,
+            quantization_config=quantization_config,
+            **kwargs,
         )
         tokenizer = AutoTokenizer.from_pretrained(model_id)
 
