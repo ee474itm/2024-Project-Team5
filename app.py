@@ -5,19 +5,34 @@ import uuid
 
 import rpyc
 import streamlit as st
+from streamlit.runtime.uploaded_file_manager import UploadedFile
 
 
 class StoryGeneratorApp:
-    def __init__(self, host, port):
+    def __init__(self, host: str, port: int):
         self.title = "MUSE"
         self.host = host
         self.port = port
         self.initialize_session_state()
-        self.story_generator = rpyc.connect(host, port)
+        self.story_generator = rpyc.connect(
+            host, port, config={"sync_request_timeout": 30}
+        )
 
-    def story_generation_fn(self, audio=None, image=None, text=None):
+    def story_generation_fn(
+        self, audio: list[dict] = None, image: list[dict] = None, text: list[str] = None
+    ):
+        audio_info = (
+            [{"name": a.name, "data": a.getvalue()} for a in audio] if audio else []
+        )
+        image_info = (
+            [{"name": i.name, "data": i.getvalue()} for i in image] if image else []
+        )
+
         return self.story_generator.root.generate_story(
-            session_id=st.session_state.session_id, audio=audio, image=image, text=text
+            session_id=st.session_state.session_id,
+            audio=audio_info,
+            image=image_info,
+            text=text,
         )
 
     def initialize_session_state(self):
@@ -31,7 +46,7 @@ class StoryGeneratorApp:
     def display_title(self):
         st.title(self.title)
 
-    def handle_file_upload(self):
+    def handle_file_upload(self) -> list[UploadedFile]:
         return st.file_uploader(
             "Upload files",
             type=["png", "jpg", "jpeg", "mp3", "wav"],
@@ -39,10 +54,12 @@ class StoryGeneratorApp:
             key=f"uploader_{st.session_state.chat_index}",
         )
 
-    def handle_text_input(self):
+    def handle_text_input(self) -> str:
         return st.chat_input("Say something")
 
-    def process_uploaded_files(self, uploaded_files):
+    def process_uploaded_files(
+        self, uploaded_files: list[UploadedFile]
+    ) -> dict[str, list[UploadedFile]]:
         contents = {"audio": [], "image": []}
         for uploaded_file in uploaded_files:
             file_type = uploaded_file.type.split("/")[0]
@@ -50,10 +67,10 @@ class StoryGeneratorApp:
                 contents[file_type].append(uploaded_file)
         return contents
 
-    def append_message(self, role, contents):
+    def append_message(self, role: str, contents: dict[str, typing.Any]):
         st.session_state.messages.append({"role": role, **contents})
 
-    def generate_story(self, contents):
+    def generate_story(self, contents: dict[str, list[UploadedFile]]):
         return self.story_generation_fn(
             audio=contents["audio"], image=contents["image"], text=contents["text"]
         )
@@ -80,9 +97,11 @@ class StoryGeneratorApp:
         text_input = self.handle_text_input()
 
         if text_input:
-            contents = {"audio": [], "image": [], "text": []}
-            if text_input:
-                contents["text"].append(text_input)
+            contents = {
+                "audio": [],
+                "image": [],
+                "text": [text_input] if text_input else [],
+            }
 
             if uploaded_files:
                 file_contents = self.process_uploaded_files(uploaded_files)
