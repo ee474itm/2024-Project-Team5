@@ -41,16 +41,25 @@ class StoryGenerationService(rpyc.Service):
         temp_file.flush()
         return temp_file
 
-    def exposed_generate_story(self, session_id, audio, image, text):
+    def exposed_generate_story(self, session_id, audio, image, text, realtime):
         """Generate a story using provided audio, image, and text data."""
         audio_files = [self.save_temp_file(x["name"], x["data"]) for x in audio]
         image_files = [self.save_temp_file(x["name"], x["data"]) for x in image]
 
         return StoryGenerationService.story_generator.generate_story(
             session_id=session_id,
+            audio_file_path=audio_files[0].name if audio_files else None,
+            image_file_path=image_files[0].name if image_files else None,
+            text=text,
+            realtime=realtime,
+        )
+
+        return StoryGenerationService.story_generator.generate_story(
+            session_id=session_id,
             audio_file_paths=[fp.name for fp in audio_files],
             image_file_paths=[fp.name for fp in image_files],
             text=text,
+            realtime=realtime,
         )
 
 

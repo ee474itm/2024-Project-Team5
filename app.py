@@ -8,6 +8,23 @@ import streamlit as st
 from streamlit.runtime.uploaded_file_manager import UploadedFile
 
 
+class StreamCache:
+    def __init__(self, iterable):
+        self.iterable = iterable
+        self.cache = []
+        self.iterator = iter(self.iterable)
+        self.completed = False
+
+    def __iter__(self):
+        for item in self.cache:
+            yield item
+        if not self.completed:
+            for item in self.iterator:
+                self.cache.append(item)
+                yield item
+            self.completed = True
+
+
 class StoryGeneratorApp:
     def __init__(self, host: str, port: int):
         self.title = "MUSE"
@@ -15,11 +32,14 @@ class StoryGeneratorApp:
         self.port = port
         self.initialize_session_state()
         self.story_generator = rpyc.connect(
-            host, port, config={"sync_request_timeout": 30}
+            host, port, config={"sync_request_timeout": 120}
         )
 
     def story_generation_fn(
-        self, audio: list[dict] = None, image: list[dict] = None, text: list[str] = None
+        self,
+        audio: list[UploadedFile] = None,
+        image: list[UploadedFile] = None,
+        text: list[str] = None,
     ):
         audio_info = (
             [{"name": a.name, "data": a.getvalue()} for a in audio] if audio else []
@@ -33,6 +53,7 @@ class StoryGeneratorApp:
             audio=audio_info,
             image=image_info,
             text=text,
+            realtime=True,
         )
 
     def initialize_session_state(self):
@@ -112,7 +133,7 @@ class StoryGeneratorApp:
 
             story = self.generate_story(copy.deepcopy(contents))
             self.append_message(
-                "assistant", {"audio": [], "image": [], "text": [story]}
+                "assistant", {"audio": [], "image": [], "text": [StreamCache(story)]}
             )
 
             st.session_state.chat_index += 1
