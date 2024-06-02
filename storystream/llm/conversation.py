@@ -5,12 +5,7 @@ from dataclasses import dataclass, field
 from typing import Dict, Optional, Tuple, Union
 
 import torch
-from transformers import (
-    AutoModelForCausalLM,
-    AutoTokenizer,
-    BitsAndBytesConfig,
-    TextIteratorStreamer,
-)
+from transformers import AutoModelForCausalLM, AutoTokenizer, TextIteratorStreamer
 
 
 @dataclass
@@ -25,7 +20,7 @@ class LLMConversation:
         "model_id": "meta-llama/Meta-Llama-3-8B-Instruct",
         "use_summarize": False,
         "device": torch.device("cuda" if torch.cuda.is_available() else "cpu"),
-        "quantization_config": BitsAndBytesConfig(load_in_8bit=True),
+        "device_map": "auto",
         "low_cpu_mem_usage": True,
     }
     base_prompt = (
@@ -41,7 +36,6 @@ class LLMConversation:
         :param model_id: The model ID to load.
         :param use_summarize: Boolean flag to determine if summarizer should be used.
         :param device: The device to load the model on.
-        :param quantization_config: Configuration for quantization.
         :param low_cpu_mem_usage: Boolean flag to use low CPU memory usage.
         :param kwargs: Additional parameters for model loading.
         """
@@ -55,8 +49,6 @@ class LLMConversation:
         self.device = config.pop("device")
         self.llm = AutoModelForCausalLM.from_pretrained(
             self.model_id,
-            device_map="auto",
-            quantization_config=self.quantization_config,
             **config,
         )
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_id)

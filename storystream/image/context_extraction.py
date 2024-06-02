@@ -1,25 +1,27 @@
 import torch
 from PIL import Image
-from transformers import (
-    BitsAndBytesConfig,
-    LlavaNextForConditionalGeneration,
-    LlavaNextProcessor,
-)
+from transformers import LlavaNextForConditionalGeneration, LlavaNextProcessor
 
 from storystream.utils import fetch_from_url
 
 
 class ImageContextExtractor:
-    model_id = "llava-hf/llava-v1.6-mistral-7b-hf"
-    quantization_config = BitsAndBytesConfig(load_in_8bit=True)
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    prompt = """[INST] <image>
-Fill in the following form for 'Subject', 'Action', and 'Location'.
-Be descriptive. Output only what goes into <Fill in Here>.
-1. Describe what the main subject in the image looks like. : Main subject of the image is <Fill in Here>.
-2. Describe the action taken by that subject in detail. : Main subject is doing <Fill in Here>.
-3. Describe the location in detail. : Main subject is located in <Fill in Here>. 
-[/INST]"""
+    default_config = {
+        "model_id": "llava-hf/llava-v1.6-mistral-7b-hf",
+        "torch_dtype": torch.float16,
+        "device": torch.device("cuda" if torch.cuda.is_available() else "cpu"),
+        "device_map": "auto",
+        "low_cpu_mem_usage": True,
+    }
+    prompt = (
+        "[INST] <image>\n"
+        "Fill in the following form for 'Subject', 'Action', and 'Location'.\n"
+        "Be descriptive. Output only what goes into <Fill in Here>.\n"
+        "1. Describe what the main subject in the image looks like. : Main subject of the image is <Fill in Here>.\n"
+        "2. Describe the action taken by that subject in detail. : Main subject is doing <Fill in Here>.\n"
+        "3. Describe the location in detail. : Main subject is located in <Fill in Here>.\n"
+        "[/INST]"
+    )
 
     def __init__(self, **kwargs):
         """
@@ -27,24 +29,22 @@ Be descriptive. Output only what goes into <Fill in Here>.
 
         :param model_id: The model ID to load.
         :param device: The device to load the model on.
-        :param quantization_config: Configuration for quantization.
+        :param low_cpu_mem_usage: Boolean flag to use low CPU memory usage.
         :param kwargs: Additional parameters for model loading.
         """
-        self.model_id = kwargs.pop("model_id", self.model_id)
-        self.device = kwargs.pop("device", self.device)
-        self.quantization_config = kwargs.pop(
-            "quantization_config", self.quantization_config
-        )
+        config = self.default_config.copy()
+        config.update(kwargs)
 
-        self.processor = LlavaNextProcessor.from_pretrained(
-            self.model_id, device_map=self.device
-        )
+        self.model_id = config.pop("model_id")
+        self.device = config.pop("device")
+        self.device_map = config.pop("device_map")
         self.model = LlavaNextForConditionalGeneration.from_pretrained(
             self.model_id,
-            low_cpu_mem_usage=True,
-            quantization_config=self.quantization_config,
-            device_map="auto",
-            **kwargs,
+            device_map=self.device_map,
+            **config,
+        )
+        self.processor = LlavaNextProcessor.from_pretrained(
+            self.model_id, device_map=self.device_map
         )
 
     def extract_context_from_url(
