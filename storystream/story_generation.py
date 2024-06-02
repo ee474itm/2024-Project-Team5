@@ -22,6 +22,7 @@ class StoryGenerator:
         audio_file_path=None,
         image_file_path=None,
         text=None,
+        realtime=False,
         **kwargs
     ):
         """
@@ -39,7 +40,7 @@ class StoryGenerator:
             image_file_path=image_file_path,
             **kwargs
         )
-        story = self.llm_conversation.get_response(context, session_id)
+        story = self.llm_conversation.get_response(context, session_id, realtime)
         return story
 
 
