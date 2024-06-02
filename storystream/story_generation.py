@@ -16,7 +16,14 @@ class StoryGenerator:
         )
         self.llm_conversation = LLMConversation(**(llm_params or {}))
 
-    def generate_story(self, audio_file_path=None, image_file_path=None, **kwargs):
+    def generate_story(
+        self,
+        session_id: int = None,
+        audio_file_path=None,
+        image_file_path=None,
+        text=None,
+        **kwargs
+    ):
         """
         Generate a story from the provided multimedia files.
 
@@ -27,17 +34,20 @@ class StoryGenerator:
         """
         # Extract context from the provided multimedia files
         context = self.context_extractor.extract_all_contexts(
-            audio_file_path=audio_file_path, image_file_path=image_file_path, **kwargs
+            user_input=text,
+            audio_file_path=audio_file_path,
+            image_file_path=image_file_path,
+            **kwargs
         )
-
-        # Generate story using the LLM with the extracted context
-        story = self.llm_conversation.get_response(context)
+        story = self.llm_conversation.get_response(context, session_id)
         return story
 
 
 # Example usage
 if __name__ == "__main__":
-    story_generator = StoryGenerator(summarizer=True)
+    story_generator = StoryGenerator(
+        audio_params=None, image_params=None, llm_params=None
+    )
     story = story_generator.generate_story(
         audio_file_path="path/to/audio/file",
         image_file_path="path/to/image/file",

@@ -28,17 +28,20 @@ class ContextExtractor:
             raise ValueError(f"Invalid image path: {image_path}")
 
     def extract_all_contexts(
-        self, audio_file_path=None, image_file_path=None, **kwargs
+        self,
+        user_input: str = None,
+        audio_file_path=None,
+        image_file_path=None,
+        **kwargs,
     ):
-        contexts = []
-
+        contexts = {}
+        if user_input:
+            contexts["text"] = user_input
         if audio_file_path:
-            contexts.append(self.extract_audio_context(audio_file_path, **kwargs))
-
+            contexts["audio"] = self.extract_audio_context(audio_file_path, **kwargs)
         if image_file_path:
-            contexts.append(self.extract_image_context(image_file_path, **kwargs))
-
-        return " ".join(contexts)
+            contexts["image"] = self.extract_image_context(image_file_path, **kwargs)
+        return contexts
 
 
 # Example usage
