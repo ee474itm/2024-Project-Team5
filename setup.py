@@ -9,14 +9,13 @@ setup(
     description="Story generation using multimodal inputs.",
     packages=find_packages(),
     install_requires=[
-        "langchain",
-        "huggingface_hub",
-        "transformers",
         "accelerate",
         "bitsandbytes",
-        "langchain-community",
-        "torch",
         "Pillow",
         "requests",
+        "rpyc",
+        "streamlit>=1.35.0",
+        "torch",
+        "transformers>=4.41.0,<=4.41.2",
     ],
 )
