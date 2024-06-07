@@ -11,6 +11,7 @@ setup(
     install_requires=[
         "accelerate",
         "bitsandbytes",
+        "librosa==0.10.2.post1",
         "Pillow",
         "requests",
         "rpyc",
