@@ -7,6 +7,8 @@ class AudioContextExtractor:
 
     def extract_context(self, audio_file_path, **kwargs):
         classified_info = self.classifier.classify(audio_file_path, **kwargs)
+        # Return the value (classified text)
+        context = classified_info 
         # Convert classified info to text context
-        context = f"Audio context: {classified_info}"
+        # context = f"Audio context: {classified_info}"
         return context
