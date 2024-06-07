@@ -65,6 +65,6 @@ class AudioClassifier:
     def classify(self, audio_file_path):
         feature = self.feature_extractor(audio_file_path)
         feature = np.array(feature).reshape((1, feature.shape[0]))
-        feature_tensor = torch.from_numpy(feature[:, 1:]).to(torch.float32, self.device)
+        feature_tensor = torch.from_numpy(feature[:, 1:]).to(self.device, torch.float32)
         _, predicted_idx = torch.max(self.model(feature_tensor), 1)
         return self.emotions[predicted_idx]
