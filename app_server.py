@@ -1,4 +1,5 @@
 import argparse
+import os
 import pathlib
 import tempfile
 import threading
@@ -21,8 +22,9 @@ class StoryGenerationService(rpyc.Service):
 
     @classmethod
     def initialize_story_generator(cls):
-        model_path = (
-            "/mnt/hard1/ivymm01/kjh_repo_test/storystream/audio/m2e_classifier_9360.pth"
+        base_dir = os.path.dirname(__file__)
+        model_path = os.path.join(
+            base_dir, "storystream", "audio", "m2e_classifier_jhs.pth"
         )
         image_params = {}
         classifier_params = {"model_path": model_path}

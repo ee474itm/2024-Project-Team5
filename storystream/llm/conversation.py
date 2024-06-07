@@ -19,6 +19,7 @@ class LLMConversation:
     default_config = {
         "model_id": "meta-llama/Meta-Llama-3-8B-Instruct",
         "use_summarize": False,
+        "torch_dtype": torch.float16,
         "device": torch.device("cuda" if torch.cuda.is_available() else "cpu"),
         "device_map": "auto",
         "low_cpu_mem_usage": True,
@@ -67,7 +68,7 @@ class LLMConversation:
         session_data = self.sessions[session_id]
 
         with session_data.lock:
-            if session_data.summary_future and session_data.summary_future.done():
+            if session_data.summary_future:
                 session_data.summary = session_data.summary_future.result()
                 session_data.summary_future = None
 
@@ -104,7 +105,7 @@ class LLMConversation:
     def generate_summary(
         self, session_id: str, story: str, future: Future = None
     ) -> str:
-        if future and not future.done():
+        if future:
             future.result()
         if not isinstance(story, str):
             story = "".join(story)
