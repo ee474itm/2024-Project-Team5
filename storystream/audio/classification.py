@@ -4,10 +4,11 @@ import numpy as np
 import librosa
 
 class AudioClassifier:
-    def __init__(self, model_path, device):
+    def __init__(self, model_path, device=None):
         self.model = M2EClassifier()
-        self.device = device
-        self.emotions = ['romantic', 'aggressive', 'sad', 'happy', 'dramatic']
+        self.device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
+
+        self.emotions = ['exciting/aggressive', 'dramatic', 'happy', 'romantic', 'sad', 'angry']
         
         self.model.load_state_dict(torch.load(model_path))
         self.model.eval()
@@ -32,7 +33,6 @@ class AudioClassifier:
         mel = np.mean(librosa.feature.melspectrogram(y=data, sr=sample_rate, hop_length=20).T, axis=0)
         result = np.hstack((result, mel))
         
-        print(result.shape)
         return result
     
     def feature_extractor(self, path):
@@ -50,4 +50,4 @@ class AudioClassifier:
 
 # device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 # classifier = AudioClassifier(model_path="./m2e_classifier_9360.pth", device=device)
-# print(classifier.classify(audio_file_path='./data/aggresive_1.wav'))
+# print(classifier.classify(audio_file_path='./data/yiruma.wav'))
