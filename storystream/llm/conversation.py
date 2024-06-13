@@ -121,20 +121,22 @@ class LLMConversation:
         context = input_text.get("text")
 
         prompt = str(self.base_prompt)
-
         if self.use_summarize and session_id in self.sessions:
-            prompt += f"Previous context: {self.sessions[session_id].summary}\n"
+            prompt += f"Continue from this previous story: {self.sessions[session_id].summary}\n"
+            prompt += "Use the following information to continue the previous story. Write just four paragraphs."
+        else:
+            prompt += "Make a new story with the following information:"
 
         if context:
-            prompt += f"Additional context: {context}\n"
+            prompt += f"\nContext: {context}"
 
         if subject or action or location:
-            prompt += f"Subject: {subject}\nAction: {action}\nLocation: {location}\n"
+            prompt += f"\nSubject: {subject}\nAction: {action}\nLocation: {location}"
 
         if mood:
-            prompt += f"Atmosphere: {mood}\n"
+            prompt += f"\nAtmosphere: {mood}"
 
-        prompt += "\nIncorporate all of the details provided.\nStory:\n"
+        prompt += "\n\nStory:\n"
         return prompt
 
     def build_summary_prompt(self, session_id: str, story: str) -> str:
@@ -144,7 +146,7 @@ class LLMConversation:
             prompt += f"{self.sessions[session_id].summary}\n"
 
         prompt += f"{story}\n"
-        prompt += "\nOnly summarize the events. Don't add anything else.\n\nSummary:\n"
+        prompt += "\nOnly summarize the events. Do not add anything else.\n\nSummary:\n"
         return prompt
 
     def generate_text(

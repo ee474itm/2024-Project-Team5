@@ -27,11 +27,11 @@ class AudioClassifier:
 
         self.emotions = [
             "exciting/aggressive",
+            "angry",
             "dramatic",
             "happy",
             "romantic",
             "sad",
-            "angry",
         ]
 
     def extract_features(self, data, sample_rate):
